@@ -1,315 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ian执行器 // 矩阵系统</title>
-<style>
-/* ===== 全局样式 ===== */
-body {
-margin: 0;
-padding: 0;
-font-family: 'Courier New', monospace;
-background-color: #000;
-color: #00ff00;
-overflow: hidden;
-}
+    <meta charset="UTF-8">
+    <title>網站公告</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
 
-/* ===== Matrix 数字雨 ===== */
-#matrix {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-z-index: -1;
-opacity: 0.3;
-}
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-/* ===== 终端界面 ===== */
-.terminal {
-position: relative;
-max-width: 800px;
-margin: 50px auto;
-padding: 20px;
-border: 1px solid #333;
-border-radius: 5px;
-box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-background-color: rgba(0, 0, 0, 0.7);
-z-index: 2;
-}
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
 
-.terminal-header {
-display: flex;
-justify-content: space-between;
-margin-bottom: 15px;
-color: #00ff88;
-}
+        .notice {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+        }
 
-.terminal-body {
-line-height: 1.5;
-}
-
-.command {
-color: #00ffff;
-}
-
-.cursor {
-display: inline-block;
-width: 10px;
-height: 20px;
-background: #00ff00;
-animation: blink 1s infinite;
-vertical-align: middle;
-}
-
-@keyframes blink {
-0%, 100% { opacity: 1; }
-50% { opacity: 0; }
-}
-
-.glow-text {
-text-shadow: 0 0 5px #00ff00;
-}
-
-/* ===== 按钮样式 ===== */
-.content {
-position: relative;
-width: 100%;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-text-align: center;
-margin-top: 30px;
-}
-
-.download-btn, .discord-btn, .verify-btn {
-background: #ff00ff;
-color: white;
-font-size: 18px;
-padding: 15px 30px;
-border: none;
-border-radius: 8px;
-cursor: pointer;
-transition: transform 0.1s ease, box-shadow 0.2s ease;
-box-shadow: 0 0 15px #ff00ff;
-margin: 10px;
-font-family: 'Courier New', monospace;
-font-weight: bold;
-}
-
-.discord-btn {
-background: #7289da;
-box-shadow: 0 0 15px #7289da;
-}
-
-.verify-btn {
-background: #00aa00;
-box-shadow: 0 0 15px #00aa00;
-}
-
-.download-btn:hover, .discord-btn:hover, .verify-btn:hover {
-transform: scale(1.05);
-}
-
-/* ===== 密钥输入样式 ===== */
-.key-input {
-background: rgba(0, 0, 0, 0.5);
-border: 1px solid #00ff00;
-color: #00ff00;
-padding: 12px 15px;
-font-size: 16px;
-width: 300px;
-margin: 10px 0;
-border-radius: 5px;
-font-family: 'Courier New', monospace;
-}
-
-.key-input:focus {
-outline: none;
-border-color: #00ffff;
-box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-
-.key-container {
-display: flex;
-flex-direction: column;
-align-items: center;
-margin: 20px 0;
-}
-
-.hidden {
-display: none;
-}
-
-.verification-message {
-color: #00ff88;
-margin: 15px 0;
-text-align: center;
-}
-
-.error-message {
-color: #ff5555;
-margin: 10px 0;
-text-align: center;
-}
-</style>
+        .date {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
-<!-- Matrix 数字雨画布 -->
-<canvas id="matrix"></canvas>
+    <div class="container">
+        <h1>📢 網站公告</h1>
 
-<!-- 终端界面 -->
-<div class="terminal">
-<div class="terminal-header">
-<span>用户@Ian执行器:~</span>
-<span>矩阵模式已激活</span>
-</div>
-<div class="terminal-body">
-<p><span class="command">$</span> <span class="glow-text">Ian执行器</span> 已上线</p>
-<p><span class="command">$</span> 正在初始化 <span style="color: #ff00ff;">矩阵</span> 序列...</p>
-<p><span class="command">$</span> 状态: <span style="color: #00ff88;">运行中</span></p>
-<p><span class="command">$</span> _<span class="cursor"></span></p>
-</div>
-
-<!-- 密钥验证区域 -->
-<div class="key-container" id="keySection">
-<input type="password" class="key-input" id="accessKey" placeholder="输入访问密钥" autocomplete="off">
-<button class="verify-btn" id="verifyBtn">验证密钥</button>
-<p class="error-message hidden" id="errorMessage">错误：无效的访问密钥</p>
-</div>
-
-<p class="verification-message hidden" id="verificationMessage">✓ 验证成功！正在解锁下载权限...</p>
-
-<!-- 下载 & Discord 按钮 (初始隐藏) -->
-<div class="content hidden" id="downloadSection">
-<a href="https://www.mediafire.com/file/p2l8uqeamz8vb0m/DDDDDDDDD_1_0_0_4.zip/file" target="_blank">
-<button class="download-btn">下載程序</button>
-</a>
-<a href="https://discord.gg/ZHNFgjeyCJ" target="_blank">
-<button class="discord-btn">加入Discord</button>
-</a>
-</div>
-
-
-<script>
-// ===== Matrix 数字雨特效 =====
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
-const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const nums = '0123456789';
-const alphabet = katakana + latin + nums;
-
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const rainDrops = [];
-
-for (let x = 0; x < columns; x++) {
-rainDrops[x] = 1;
-}
-
-const draw = () => {
-ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-ctx.fillStyle = '#00ff00';
-ctx.font = fontSize + 'px monospace';
-
-for (let i = 0; i < rainDrops.length; i++) {
-const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-
-if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-rainDrops[i] = 0;
-}
-rainDrops[i]++;
-}
-};
-
-setInterval(draw, 30);
-
-// ===== 终端模拟输入 =====
-const terminalBody = document.querySelector('.terminal-body');
-const commands = [
-'> 注入代码流...',
-'> 绕过安全系统...',
-'> 访问权限已获取',
-'> 输入"运行"开始执行'
-];
-
-let i = 0;
-function typeCommand() {
-if (i < commands.length) {
-const newLine = document.createElement('p');
-newLine.innerHTML = `<span class="command">$</span> ${commands[i]}`;
-terminalBody.appendChild(newLine);
-i++;
-setTimeout(typeCommand, 1000);
-}
-}
-
-setTimeout(typeCommand, 1500);
-
-// ===== 按钮悬浮特效 =====
-document.addEventListener('mousemove', (e) => {
-const btn = document.getElementById('downloadBtn');
-if (btn) {
-const { clientX, clientY } = e;
-const { innerWidth, innerHeight } = window;
-const x = (clientX - innerWidth / 2) / 25;
-const y = (clientY - innerHeight / 2) / 25;
-btn.style.transform = `translate(${x}px, ${y}px)`;
-}
-});
-
-// ===== 密钥验证系统 =====
-const validKeys = ["COLA2023", "Ian0602", "EXECUTOR666"]; // 预定义的合法密钥
-const accessKeyInput = document.getElementById('accessKey');
-const verifyBtn = document.getElementById('verifyBtn');
-const errorMessage = document.getElementById('errorMessage');
-const verificationMessage = document.getElementById('verificationMessage');
-const keySection = document.getElementById('keySection');
-const downloadSection = document.getElementById('downloadSection');
-
-verifyBtn.addEventListener('click', verifyKey);
-accessKeyInput.addEventListener('keypress', (e) => {
-if (e.key === 'Enter') {
-verifyKey();
-}
-});
-
-function verifyKey() {
-const enteredKey = accessKeyInput.value.trim();
-
-if (validKeys.includes(enteredKey)) {
-// 验证成功
-errorMessage.classList.add('hidden');
-verificationMessage.classList.remove('hidden');
-
-// 3秒后显示下载按钮
-setTimeout(() => {
-keySection.classList.add('hidden');
-downloadSection.classList.remove('hidden');
-verificationMessage.textContent = "✓ 验证成功！您现在可以下载程序";
-}, 2000);
-
-// 记录验证成功的密钥（在实际应用中应该发送到服务器验证）
-console.log("Valid key used:", enteredKey);
-} else {
-// 验证失败
-errorMessage.classList.remove('hidden');
-accessKeyInput.value = '';
-setTimeout(() => {
-errorMessage.classList.add('hidden');
-}, 3000);
-}
-}
-</script>
-</body>
-</html>
-
-
-
+        <div class="notice">
+            <h2>我操你媽b的</h2>
+            <p>媽的死媽那麼愛點小心中毒哈哈</p>
+            <div class="date">發布時間：2025/08/06</div>
+        </div>
